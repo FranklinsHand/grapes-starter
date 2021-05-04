@@ -6,25 +6,9 @@ const editor = grapesjs.init({
     type: 'local',          // Type of the storage
     fromElement: true,   //used for tempalate manager
     autosave: 0,         // Store data automatically
-    autoload: 0,         // Autoload stored data on init
-    stepsBeforeSave: 1,     // If autosave enabled, indicates how many changes are necessary before store method is triggered
-    // ONLY FOR LOCAL STORAGE
-    // If enabled, checks if browser supports Local Storage
-    checkLocal: 1,
-
+    autoload: 1,         // Autoload stored data on init
   },
-
-  //https://github.com/portablemind/grapesjs-code-editor
-  commands: {
-        defaults: [
-          window['@truenorthtechnology/grapesjs-code-editor'].codeCommandFactory(),
-        ],
-      },
-      panels: { /* ... add the open-code button to the views panel */ },
-
-
-  plugins: ['gjs-blocks-basic',
-    'grapesjs-template-manager',
+  plugins: ['gjs-preset-webpage',
     'grapesjs-style-bg',
     'grapesjs-style-gradient',
     'grapesjs-typed',
@@ -38,6 +22,10 @@ const editor = grapesjs.init({
     'grapesjs-plugin-forms',
     ],
   pluginsOpts: {
+    'grapesjs-indexeddb': {
+      dbName: 'gjs',
+      objectStoreName: 'templates',
+    },
     'grapesjs-style-bg': { /* options */ },
     'grapesjs-tui-image-editor': {
       config: {
@@ -69,7 +57,7 @@ const editor = grapesjs.init({
             category: 'Extra'
           }
         },
-        'grapesjs-typed': {
+    'grapesjs-typed': {
       block: {
         category: 'Extra',
         content: {
@@ -83,81 +71,28 @@ const editor = grapesjs.init({
         }
       }
     },
-  }
+  },
+  pageManager: {
+    pages: [{
+      id: 'page-1',
+      name: 'Page 1',
+      component: '<div id="comp1">Page 1</div>',
+      styles: `#comp1 { color: red }` },
+    {
+      id: 'page-2',
+      name: 'Page 2',
+      component: '<div id="comp2">Page 2</div>',
+      styles: `#comp2 { color: green }` },
+    {
+      id: 'page-3',
+      name: 'Page 3',
+      component: '<div id="comp3">Page 3</div>',
+      styles: `#comp3 { color: blue }` }] }
 });
-
-
-//https://github.com/Ju99ernaut/grapesjs-template-manager
-const pn = editor.Panels;
-const panelOpts = pn.addPanel({
-  id: 'options'
-});
-panelOpts.get('buttons').add([{
-  attributes: {
-    title: 'Open Templates'
-  },
-  className: 'fa fa-file-o',
-  command: 'open-templates',//Open modal
-  id: 'open-templates'
-}, {
-  attributes: {
-    title: 'Save As Template'
-  },
-  className: 'fa fa-archive',
-  command: 'save-as-template',//Save page as template
-  id: 'save-as-template'
-}, {
-  attributes: {
-    title: 'Delete Template'
-  },
-  className: 'fa fa-trash-o',
-  command: 'delete-template',//Delete open page or template
-  id: 'delete-templates'
-}, {
-  attributes: {
-    title: 'Take Screenshot'
-  },
-  className: 'fa fa-camera',
-  command: 'take-screenshot',//Take an image of the canvas
-  id: 'take-screenshot'
-}]);
-
-//https://github.com/artf/grapesjs/issues/122#issuecomment-313989326
-//https://github.com/artf/grapesjs/issues/122#issuecomment-314737681
-// add save button
-pn.addButton('options', [{
-  id: 'save-db',
-  className: 'fa fa-floppy-o',
-  command: 'save-db',
-  attributes: {title: 'Save DB'}
-}]);
-
-// add save command
-editor.Commands.add('save-db', {
-    run: function(editor, sender) {
-      //sender && sender.set('active', 0); // turn off the button
-      editor.store();
-    }
-  });
-
-
-//Make Grapick plugin work
-//https://github.com/artf/grapick
-//Could add a custom color picker down the road if needed
-const gp = new Grapick({el: '#gp'});
-
-// Handlers are color stops
-gp.addHandler(0, 'red');
-gp.addHandler(100, 'blue');
-
-// Do stuff on change of the gradient
-gp.on('change', complete => {
-  document.body.style.background = gp.getSafeValue();
-})
 
 
 //although this is part of the new API, new pages are not saving. Currently useless
-/*
+
 const pagesApp = new Vue({
   el: '.pages-wrp',
   data: { pages: [] },
@@ -194,4 +129,40 @@ const pagesApp = new Vue({
         component: '<div>New page</div>' });
 
     } } });
-*/
+
+
+//https://github.com/Ju99ernaut/grapesjs-template-manager
+const pn = editor.Panels;
+
+//https://github.com/artf/grapesjs/issues/122#issuecomment-313989326
+//https://github.com/artf/grapesjs/issues/122#issuecomment-314737681
+// add save button
+pn.addButton('options', [{
+  id: 'save-db',
+  className: 'fa fa-floppy-o',
+  command: 'save-db',
+  attributes: {title: 'Save DB'}
+}]);
+
+// add save command
+editor.Commands.add('save-db', {
+    run: function(editor, sender) {
+      //sender && sender.set('active', 0); // turn off the button
+      editor.store();
+    }
+  });
+
+
+//Make Grapick plugin work
+//https://github.com/artf/grapick
+//Could add a custom color picker down the road if needed
+const gp = new Grapick({el: '#gp'});
+
+// Handlers are color stops
+gp.addHandler(0, 'red');
+gp.addHandler(100, 'blue');
+
+// Do stuff on change of the gradient
+gp.on('change', complete => {
+  document.body.style.background = gp.getSafeValue();
+})
